@@ -1,4 +1,4 @@
-import { Ingredient } from '../shared/ingredient.model';
+import { Ingredient } from '../shared/ingredient.interface';
 import { Subject } from 'rxjs/Subject';
 
 export class ShoppingListService {
@@ -6,8 +6,8 @@ export class ShoppingListService {
     startedEditing = new Subject<number>();
 
     private ingredients: Array<Ingredient> = [
-        new Ingredient("Apples", 5),
-        new Ingredient("Tomatoes", 10),
+        { name: 'Apples', amount: 5 },
+        { name: 'Tomatoes', amount: 10 }
       ];
     
     getIngredient(index: number) {

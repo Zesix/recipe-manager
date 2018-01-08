@@ -1,0 +1,10 @@
+.col-xs-3 {
+    @media only screen and (min-width: 33em) {
+        float: right;
+      }
+}
+
+input.ng-invalid.ng-touched,
+textarea.ng-invalid.ng-touched {
+    border: 1px solid red;
+}
