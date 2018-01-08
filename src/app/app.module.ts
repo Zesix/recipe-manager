@@ -1,6 +1,10 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+
+import { AngularFireModule } from 'angularfire2';
+import { AngularFirestoreModule } from 'angularfire2/firestore';
 
 import { AppComponent } from './app.component';
 import { HeaderComponent } from './header/header.component';
@@ -18,6 +22,17 @@ import { AppRoutingModule } from './app-routing.module';
 
 import { ShoppingListService } from './shopping-list/shopping-list.service';
 import { RecipeService } from './recipes/recipe.service';
+import { RecipeStorageService } from './shared/recipe-storage.service';
+import { FirestoreService } from './shared/firestore.service';
+
+var firestoreConfig = {
+  apiKey: "AIzaSyBdthJRryoYvw-u2rLcgH9U23jhi0hdxlE",
+  authDomain: "angular-showcase-app.firebaseapp.com",
+  databaseURL: "https://angular-showcase-app.firebaseio.com",
+  projectId: "angular-showcase-app",
+  storageBucket: "angular-showcase-app.appspot.com",
+  messagingSenderId: "774304205510"
+};
 
 @NgModule({
   declarations: [
@@ -37,9 +52,12 @@ import { RecipeService } from './recipes/recipe.service';
     BrowserModule,
     FormsModule,
     ReactiveFormsModule,
+    AngularFireModule.initializeApp(firestoreConfig),
+    AngularFirestoreModule,
+    HttpClientModule,
     AppRoutingModule
   ],
-  providers: [ShoppingListService, RecipeService],
+  providers: [ShoppingListService, RecipeService, RecipeStorageService, FirestoreService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
