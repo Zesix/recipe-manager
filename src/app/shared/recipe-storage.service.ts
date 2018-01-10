@@ -21,7 +21,9 @@ export class RecipeStorageService {
         private angularFirestore: AngularFirestore
     ) {}
 
+
     storeRecipes() {
+      /*
         try {
             this.recipeService.getRecipes().forEach(
                 recipe => {
@@ -32,14 +34,16 @@ export class RecipeStorageService {
         catch(e) {
             console.log('Error: ', e);
         }
+        */
     }
 
     getRecipes() {
+      /*
         let response : Observable<Recipe[]> = this.firestoreService.colWithIds$('recipes');
         let recipesSub : Subscription = response.subscribe(
             (recipes: Recipe[]) => {
-                this.recipeService.setRecipes(recipes); 
+                this.recipeService.setRecipes(recipes);
             }
-        );  
+        );*/
     }
 }

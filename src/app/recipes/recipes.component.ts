@@ -1,3 +1,4 @@
+import { Subscription } from 'rxjs/Subscription';
 import { Component, OnInit } from '@angular/core';
 import { Recipe } from './recipe.interface';
 import { RecipeService } from './recipe.service';
@@ -8,12 +9,16 @@ import { RecipeService } from './recipe.service';
   styleUrls: ['./recipes.component.scss']
 })
 export class RecipesComponent implements OnInit {
-  selectedRecipe: Recipe;
+  private subscription: Subscription;
+  public recipes: Recipe[];
 
   constructor(private recipeService: RecipeService) { }
 
   ngOnInit() {
-    this.recipeService.recipeSelected.subscribe((recipe: Recipe) => { this.selectedRecipe = recipe; });
+    this.subscription = this.recipeService.myRecipes$
+      .subscribe((recipes: Recipe[]) => {
+        this.recipes = recipes;
+    });
   }
 
 }
