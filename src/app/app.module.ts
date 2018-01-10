@@ -22,7 +22,6 @@ import { AppRoutingModule } from './app-routing.module';
 
 import { ShoppingListService } from './shopping-list/shopping-list.service';
 import { RecipeService } from './recipes/recipe.service';
-import { RecipeStorageService } from './shared/recipe-storage.service';
 import { FirestoreService } from './shared/firestore.service';
 
 var firestoreConfig = {
@@ -57,7 +56,7 @@ var firestoreConfig = {
     HttpClientModule,
     AppRoutingModule
   ],
-  providers: [ShoppingListService, RecipeService, RecipeStorageService, FirestoreService],
+  providers: [ShoppingListService, RecipeService, FirestoreService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

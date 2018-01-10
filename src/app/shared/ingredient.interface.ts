@@ -1,4 +1,4 @@
 export interface Ingredient {
-    name: string,
-    amount: number
+    name: string;
+    amount: number;
 }

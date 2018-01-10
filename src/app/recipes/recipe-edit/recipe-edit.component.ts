@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { FormGroup, FormControl, FormArray, Validators } from '@angular/forms';
+import { Observable } from 'rxjs/Observable';
 
 import { Recipe } from '../recipe.interface';
 import { RecipeService } from '../recipe.service';
@@ -11,41 +12,45 @@ import { RecipeService } from '../recipe.service';
   styleUrls: ['./recipe-edit.component.scss']
 })
 export class RecipeEditComponent implements OnInit {
-  id: number;
+  index: number;
   editMode: boolean = false;
   recipeForm: FormGroup;
+  recipe: Recipe;
 
   constructor(private route: ActivatedRoute,
     private recipeService: RecipeService,
-    private router: Router) { 
+    private router: Router) {
 
   }
 
   ngOnInit() {
-    this.route.params.subscribe(
-      (params: Params) => {
-        this.id = +params['id'];
+    this.recipe = { name: '', description: '', imagePath: '', ingredients: [] };
+
+    Observable.combineLatest(this.recipeService.myRecipes$, this.route.params )
+    .subscribe((params: Params) => {
+      this.index = +params['id'];
         // Check if this is a new recipe or if we are editing an existing one.
         this.editMode = params['id'] != null;
-
-        this.initForm();
-      }
-    )
+        if ( this.editMode ) {
+          this.recipe = this.recipeService.getRecipe(this.index);
+          this.initForm();
+        }
+    });
+    this.initForm();
   }
 
   onSubmit() {
-    const newRecipe : Recipe =
-    {
-      name: this.recipeForm.value['name'], 
-      description: this.recipeForm.value['description'],
-      imagePath: this.recipeForm.value['imagePath'],
-      ingredients: this.recipeForm.value['ingredients']
-    };
+
+    this.recipe.name=this.recipeForm.value['name'],
+    this.recipe.description= this.recipeForm.value['description'],
+    this.recipe.imagePath= this.recipeForm.value['imagePath'],
+    this.recipe.ingredients= this.recipeForm.value['ingredients'];
+
 
     if (this.editMode) {
-      this.recipeService.updateRecipe(this.id, newRecipe);
+      this.recipeService.updateRecipe(this.recipe);
     } else {
-      this.recipeService.addRecipe(newRecipe);
+      this.recipeService.addRecipe(this.recipe);
     }
 
     this.router.navigate(['../'], {relativeTo: this.route});
@@ -55,14 +60,14 @@ export class RecipeEditComponent implements OnInit {
     let recipeName = '';
     let recipeImagePath = '';
     let recipeDescription = '';
-    let recipeIngredients = new FormArray([]);
+    const recipeIngredients = new FormArray([]);
 
     if (this.editMode) {
-      const recipe = this.recipeService.getRecipe(this.id);
+      const recipe = this.recipeService.getRecipe(this.index);
       recipeName = recipe.name;
       recipeImagePath = recipe.imagePath;
       recipeDescription = recipe.description;
-      
+
       // Check if a recipe has any ingredients since they aren't required.
       if (recipe['ingredients'])
         for (let ingredient of recipe.ingredients) {

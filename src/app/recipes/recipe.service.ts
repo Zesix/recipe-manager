@@ -1,4 +1,11 @@
-import { Injectable, EventEmitter } from '@angular/core';
+import { Injectable, EventEmitter, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs/Subscription';
+import {
+  AngularFirestore,
+  AngularFirestoreDocument,
+  AngularFirestoreCollection
+} from 'angularfire2/firestore';
+import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 
 import { Recipe } from './recipe.interface';
@@ -6,53 +13,57 @@ import { Ingredient } from '../shared/ingredient.interface';
 import { ShoppingListService } from '../shopping-list/shopping-list.service';
 
 @Injectable()
-export class RecipeService {
-    recipesChanged = new Subject<Recipe[]>();
-    recipeSelected = new EventEmitter();
+export class RecipeService implements OnDestroy {
+    // recipesChanged = new Subject<Recipe[]>();
+    // recipeSelected = new EventEmitter();
+    private sub: Subscription;
+    public myRecipes$: Observable<any[]> ;
+    public myRecipes: any[]  ;
+    private currentRecipe: Subject<Recipe[]>;
 
-    recipes: Array<Recipe> = [
-        {
-        name: 'A Test Recipe', 
-        description: 'A Test', 
-        imagePath: 'http://maxpixel.freegreatpicture.com/static/photo/1x/Food-Kitchen-Meals-Home-Made-Dishes-Recipe-Bio-1175493.jpg',
-        ingredients: [
-            { name: 'Meat', amount: 1 },
-            { name:'French Fries', amount: 20 }
-        ]
-        }
-      ];
 
-    constructor(private shoppingListService: ShoppingListService) {}
+    constructor(private shoppingListService: ShoppingListService, private fs: AngularFirestore) {
+      this.myRecipes$ = this.fs.collection('recipes')
+      .snapshotChanges()
+      .map(actions => {
+        return actions.map(a => {
+          const data = a.payload.doc.data();
+          const id = a.payload.doc.id;
+          return { id, ...data };
+        });
+      });
 
-    setRecipes(recipes: Recipe[]) {
-        this.recipes = recipes;
-        this.recipesChanged.next(this.recipes.slice());
+      this.sub = this.myRecipes$.subscribe( recipes =>
+        this.myRecipes  = recipes
+      );
     }
 
-    getRecipes() {
-        return this.recipes.slice();
+    ngOnDestroy() {
+      this.sub.unsubscribe();
     }
 
     getRecipe(index: number) {
-        return this.recipes.slice()[index];
+      if ( this.myRecipes ) {
+        return this.myRecipes[index];
+      } else {
+
+      }
     }
 
     addIngredientsToShoppingList(ingredients: Ingredient[]) {
-        this.shoppingListService.addIngredients(ingredients);
+       this.shoppingListService.addIngredients(ingredients);
     }
 
     addRecipe(recipe: Recipe) {
-        this.recipes.push(recipe);
-        this.recipesChanged.next(this.recipes.slice());
+      this.fs.collection('recipes').add(recipe);
     }
 
-    updateRecipe(index: number, newRecipe: Recipe) {
-        this.recipes[index] = newRecipe;
-        this.recipesChanged.next(this.recipes.slice());
+    updateRecipe(newRecipe: Recipe) {
+      this.fs.collection('recipes').doc(newRecipe.id).update(newRecipe);
     }
 
-    deleteRecipe(index: number) {
-        this.recipes.splice(index, 1);
-        this.recipesChanged.next(this.recipes.slice());
+    deleteRecipe(newRecipe: Recipe) {
+      this.fs.collection('recipes').doc(newRecipe.id).delete();
     }
+
 }

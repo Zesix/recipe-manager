@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/observable/combineLatest';
+
 import { Recipe } from '../recipe.interface';
 import { RecipeService } from '../recipe.service';
 
@@ -17,9 +20,10 @@ export class RecipeDetailComponent implements OnInit {
     private router: Router) { }
 
   ngOnInit() {
-    this.route.params.subscribe((params: Params) => {
-      this.id = +params['id'];
-      this.recipe = this.recipeService.getRecipe(this.id);
+    Observable.combineLatest(this.recipeService.myRecipes$, this.route.params)
+      .subscribe((params: Params) => {
+        this.id = +params[1]['id'];
+        this.recipe = this.recipeService.getRecipe(this.id);
     });
   }
 
@@ -32,7 +36,7 @@ export class RecipeDetailComponent implements OnInit {
   }
 
   onDeleteRecipe() {
-    this.recipeService.deleteRecipe(this.id);
+    this.recipeService.deleteRecipe(this.recipe);
     this.router.navigate(['/recipes']);
   }
 
