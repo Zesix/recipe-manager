@@ -1,8 +1,6 @@
 import { Observable } from 'rxjs/Observable';
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs/Subscription';
-
 import { Recipe } from '../recipe.interface';
 import { RecipeService } from '../recipe.service';
 
@@ -14,8 +12,6 @@ import { RecipeService } from '../recipe.service';
 export class RecipeListComponent implements OnInit, OnDestroy {
   @Input()
   recipes: Recipe[];
-
-  subscription: Subscription;
 
   constructor(private recipeService: RecipeService,
     private router: Router,
@@ -30,6 +26,5 @@ export class RecipeListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
   }
 }

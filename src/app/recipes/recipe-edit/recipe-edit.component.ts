@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs/Observable';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { FormGroup, FormControl, FormArray, Validators } from '@angular/forms';
-import { Observable } from 'rxjs/Observable';
+import { Subscription } from 'rxjs/Subscription';
 
 import { Recipe } from '../recipe.interface';
 import { RecipeService } from '../recipe.service';
@@ -11,7 +12,8 @@ import { RecipeService } from '../recipe.service';
   templateUrl: './recipe-edit.component.html',
   styleUrls: ['./recipe-edit.component.scss']
 })
-export class RecipeEditComponent implements OnInit {
+export class RecipeEditComponent implements OnInit, OnDestroy {
+  subscription: Subscription;
   index: number;
   editMode: boolean = false;
   recipeForm: FormGroup;
@@ -26,17 +28,29 @@ export class RecipeEditComponent implements OnInit {
   ngOnInit() {
     this.recipe = { name: '', description: '', imagePath: '', ingredients: [] };
 
-    Observable.combineLatest(this.recipeService.myRecipes$, this.route.params )
-    .subscribe((params: Params) => {
-      this.index = +params['id'];
-        // Check if this is a new recipe or if we are editing an existing one.
-        this.editMode = params['id'] != null;
-        if ( this.editMode ) {
+    if (this.recipeService.myRecipes && this.recipeService.myRecipes.length > 0 ) {
+      this.subscription = this.route.params.subscribe(
+        (params: Params) => {
+          this.index = +params['id'];
+          this.editMode = !!this.index;
           this.recipe = this.recipeService.getRecipe(this.index);
           this.initForm();
-        }
-    });
+        });
+    } else {
+      this.subscription = Observable.combineLatest(this.recipeService.myRecipes$, this.route.params )
+      .subscribe((params: Params) => {
+        this.index = +params[1]['id'];
+        this.editMode = !!this.index;
+        this.recipe = this.recipeService.getRecipe(this.index);
+        this.initForm();
+      });
+    }
+
     this.initForm();
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 
   onSubmit() {
@@ -79,6 +93,8 @@ export class RecipeEditComponent implements OnInit {
             ])
           }))
         }
+    } else {
+      this.recipe = {name: '', description: '', imagePath: '', ingredients: [] };
     }
 
     this.recipeForm = new FormGroup({
@@ -97,7 +113,7 @@ export class RecipeEditComponent implements OnInit {
         Validators.required,
         Validators.pattern(/^[1-9]+[0-9]*$/)
       ])
-    }))
+    }));
   }
 
   onDeleteIngredient(index: number) {

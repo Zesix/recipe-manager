@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
-import { 
-    AngularFirestore, 
+import {
+    AngularFirestore,
     AngularFirestoreDocument,
     AngularFirestoreCollection
   } from 'angularfire2/firestore';
@@ -49,7 +49,7 @@ export class FirestoreService {
       return actions.map(a => {
         const data = a.payload.doc.data();
         const id = a.payload.doc.id;
-        return { id, ...data };
+        return { id, ...data }
       });
     });
   }
