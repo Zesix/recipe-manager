@@ -10,6 +10,8 @@ import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/take';
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/switchMap';
+import { expand, takeWhile, tap, mergeMap, take } from 'rxjs/operators';
+import { fromPromise } from 'rxjs/observable/fromPromise';
 import * as firebase from 'firebase/app';
 
 type CollectionPredicate<T> = string | AngularFirestoreCollection<T>;
@@ -31,7 +33,18 @@ export class FirestoreService {
   }
 
   /// **************
-  /// Get Data
+  /// Get data from firestore as an Observable.
+  /// **************
+  /// Usage:
+  /// this.db.doc$('notes/ID');
+  /// this.db.col$('notes', ref => ref.where('user', '==', 'Jeff'));
+  /// Or just like regular AngularFire:
+  /// noteRef: AngularFireList = this.db.doc('notes/ID');
+  /// this.db.doc(noteRef);
+  /// this.noteRef.valueChanges();
+  /// **************
+  /// Get documents with IDs included:
+  /// db.colWithIds$('notes');
   /// **************
   doc$<T>(ref:  DocPredicate<T>): Observable<T> {
     return this.doc(ref).snapshotChanges().map(doc => {
@@ -54,9 +67,15 @@ export class FirestoreService {
     });
   }
   /// **************
-  /// Write Data
+  /// Write Data with a timestamp for easier ordering later.
   /// **************
-  /// Firebase Server Timestamp
+  /// Usage:
+  /// db.update('items/ID', data);                       // adds updatedAt field
+  /// db.set('items/ID', data);                          // adds createdAt field
+  /// db.add('items', data);                             // adds createdAt field
+  /// this.db.upsert('notes/xyz', { content: 'hello' })  // updates doc or creates new if doesn't exist
+  /// **************
+  /// Retrieve firebase server timestamp.
   get timestamp() {
     return firebase.firestore.FieldValue.serverTimestamp()
   }
@@ -96,8 +115,12 @@ export class FirestoreService {
     })
   }
   /// **************
-  /// Inspect Data
+  /// Inspect data
   /// **************
+  /// Console log the snapshot of an observable and time its latency.
+  /// Usage:
+  /// this.db.inspectDoc('notes/xyz');
+  /// this.db.inspectCol('notes');
   inspectDoc(ref: DocPredicate<any>): void {
     const tick = new Date().getTime()
     this.doc(ref).snapshotChanges()
@@ -125,7 +148,7 @@ export class FirestoreService {
   connect(host: DocPredicate<any>, key: string, doc: DocPredicate<any>) {
     return this.doc(host).update({ [key]: this.doc(doc).ref })
   }
-  /// returns a documents references mapped to AngularFirestoreDocument
+  /// returns a document's references mapped to AngularFirestoreDocument
   docWithRefs$<T>(ref: DocPredicate<T>) {
     return this.doc$(ref).map(doc => {
       for (const k of Object.keys(doc)) {
@@ -135,5 +158,40 @@ export class FirestoreService {
       }
       return doc
     })
+  }
+  /// **************
+  /// Delete a collection and all of its documents.
+  /// Usage: this.db.deleteCollection('widgets', 5).subscribe();
+  /// **************
+  deleteCollection(path: string, batchSize: number): Observable<any> {
+
+    const source = this.deleteBatch(path, batchSize)
+
+    // expand will call deleteBatch recursively until the collection is deleted
+    return source.pipe(
+      expand(val => this.deleteBatch(path, batchSize)),
+      takeWhile(val => val > 0)
+   )
+
+  }
+
+  // Detetes documents as batched transaction
+  private deleteBatch(path: string, batchSize: number): Observable<any> {
+    const colRef = this.angularFireStore.collection(path, ref => ref.orderBy('__name__').limit(batchSize) )
+
+    return colRef.snapshotChanges().pipe(
+      take(1),
+      mergeMap(snapshot => {
+
+        // Delete documents in a batch
+        const batch = this.angularFireStore.firestore.batch();
+        snapshot.forEach(doc => {
+            batch.delete(doc.payload.doc.ref);
+        });
+
+        return fromPromise( batch.commit() ).map(() => snapshot.length)
+
+      })
+    )
   }
 }
