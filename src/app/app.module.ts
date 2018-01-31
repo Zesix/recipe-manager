@@ -23,6 +23,8 @@ import { AppRoutingModule } from './app-routing.module';
 import { ShoppingListService } from './shopping-list/shopping-list.service';
 import { RecipeService } from './recipes/recipe.service';
 import { FirestoreService } from './shared/firestore.service';
+import { SignupComponent } from './auth/signup/signup.component';
+import { SigninComponent } from './auth/signin/signin.component';
 
 var firestoreConfig = {
   apiKey: "AIzaSyBdthJRryoYvw-u2rLcgH9U23jhi0hdxlE",
@@ -45,7 +47,9 @@ var firestoreConfig = {
     ShoppingEditComponent,
     DropdownDirective,
     RecipeHomeComponent,
-    RecipeEditComponent
+    RecipeEditComponent,
+    SignupComponent,
+    SigninComponent
   ],
   imports: [
     BrowserModule,
