@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { FirestoreService } from '../firestore.service';
+import { FirestoreService } from '../../core/firestore.service';
 import { Observable } from 'rxjs/Observable';
 
 @Pipe({
@@ -8,6 +8,6 @@ import { Observable } from 'rxjs/Observable';
 export class DocPipe implements PipeTransform {
   constructor(private db: FirestoreService) {}
   transform(value: any): Observable<any> {
-    return this.db.doc$(value.path)
+    return this.db.doc$(value.path);
   }
 }
