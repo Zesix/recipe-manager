@@ -14,38 +14,36 @@ import { RecipeService } from '../recipe.service';
 })
 export class RecipeEditComponent implements OnInit, OnDestroy {
   subscription: Subscription;
-  index: number;
-  editMode: boolean = false;
+  id: string;
+  editMode = false;
   recipeForm: FormGroup;
   recipe: Recipe;
 
   constructor(private route: ActivatedRoute,
     private recipeService: RecipeService,
     private router: Router) {
-
   }
 
   ngOnInit() {
     this.recipe = { name: '', description: '', imagePath: '', ingredients: [] };
 
-    if (this.recipeService.myRecipes && this.recipeService.myRecipes.length > 0 ) {
+    if (this.recipeService.myRecipes$) {
       this.subscription = this.route.params.subscribe(
         (params: Params) => {
-          this.index = +params['id'];
-          this.editMode = !!this.index;
-          this.recipe = this.recipeService.getRecipe(this.index);
+          this.id = params['id'];
+          this.editMode = !!this.id;
+          this.recipeService.getRecipe(this.id).take(1).subscribe(RecipeData => this.recipe = RecipeData);
           this.initForm();
         });
-    } else {
-      this.subscription = Observable.combineLatest(this.recipeService.myRecipes$, this.route.params )
-      .subscribe((params: Params) => {
-        this.index = +params[1]['id'];
-        this.editMode = !!this.index;
-        this.recipe = this.recipeService.getRecipe(this.index);
-        this.initForm();
-      });
+    // } else {
+    //   this.subscription = Observable.combineLatest(this.recipeService.myRecipes$, this.route.params )
+    //   .subscribe((params: Params) => {
+    //     this.id = params[1]['id'];
+    //     this.editMode = !!this.id;
+    //     this.recipe = this.recipeService.getRecipe(this.id);
+    //     this.initForm();
+    //   });
     }
-
     this.initForm();
   }
 
@@ -55,10 +53,10 @@ export class RecipeEditComponent implements OnInit, OnDestroy {
 
   onSubmit() {
 
-    this.recipe.name=this.recipeForm.value['name'],
-    this.recipe.description= this.recipeForm.value['description'],
-    this.recipe.imagePath= this.recipeForm.value['imagePath'],
-    this.recipe.ingredients= this.recipeForm.value['ingredients'];
+    this.recipe.name = this.recipeForm.value['name'],
+    this.recipe.description = this.recipeForm.value['description'],
+    this.recipe.imagePath = this.recipeForm.value['imagePath'],
+    this.recipe.ingredients = this.recipeForm.value['ingredients'];
 
 
     if (this.editMode) {
@@ -77,22 +75,23 @@ export class RecipeEditComponent implements OnInit, OnDestroy {
     const recipeIngredients = new FormArray([]);
 
     if (this.editMode) {
-      const recipe = this.recipeService.getRecipe(this.index);
+      const recipe = this.recipeService.getRecipe(this.id).take(1).subscribe(data => recipe);
       recipeName = recipe.name;
       recipeImagePath = recipe.imagePath;
       recipeDescription = recipe.description;
 
       // Check if a recipe has any ingredients since they aren't required.
-      if (recipe['ingredients'])
-        for (let ingredient of recipe.ingredients) {
+      if (recipe['ingredients']) {
+        for (const ingredient of recipe.ingredients) {
           recipeIngredients.push(new FormGroup({
             'name': new FormControl(ingredient.name, Validators.required),
             'amount': new FormControl(ingredient.amount, [
               Validators.required,
               Validators.pattern(/^[1-9]+[0-9]*$/)
             ])
-          }))
+          }));
         }
+      }
     } else {
       this.recipe = {name: '', description: '', imagePath: '', ingredients: [] };
     }

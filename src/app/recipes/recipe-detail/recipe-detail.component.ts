@@ -12,24 +12,24 @@ import 'rxjs/add/observable/combineLatest';
 })
 export class RecipeDetailComponent implements OnInit {
   recipe: Recipe;
-  id: number;
+  id: string;
 
   constructor(private recipeService: RecipeService,
     private route: ActivatedRoute,
     private router: Router) { }
 
   ngOnInit() {
-    if (this.recipeService.myRecipes && this.recipeService.myRecipes.length > 0 ) {
+    if (this.recipeService.myRecipes$) {
       this.route.params.subscribe(
         (params: Params) => {
-          this.id = +params['id'];
-          this.recipe = this.recipeService.getRecipe(this.id);
+          this.id = params['id'];
+          this.recipeService.getRecipe(this.id).take(1).subscribe(recipe => this.recipe = recipe);
         });
     } else {
       Observable.combineLatest(this.recipeService.myRecipes$, this.route.params )
       .subscribe((params: Params) => {
-        this.id = +params[1]['id'];
-        this.recipe = this.recipeService.getRecipe(this.id);
+        this.id = params[1]['id'];
+        this.recipeService.getRecipe(this.id).take(1).subscribe(recipe => this.recipe = recipe);
       });
     }
   }

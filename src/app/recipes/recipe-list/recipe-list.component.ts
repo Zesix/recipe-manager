@@ -10,14 +10,14 @@ import { RecipeService } from '../recipe.service';
   styleUrls: ['./recipe-list.component.scss']
 })
 export class RecipeListComponent implements OnInit, OnDestroy {
-  @Input()
-  recipes: Recipe[];
+  public recipes$;
 
   constructor(private recipeService: RecipeService,
     private router: Router,
     private route: ActivatedRoute) { }
 
   ngOnInit() {
+    this.recipes$ = this.recipeService.myRecipes$;
   }
 
 

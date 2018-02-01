@@ -9,21 +9,11 @@ import { RecipeService } from './recipe.service';
   styleUrls: ['./recipes.component.scss']
 })
 export class RecipesComponent implements OnInit, OnDestroy {
-  private subscription: Subscription;
-  public recipes: Recipe[];
-
-  constructor(private recipeService: RecipeService) { }
 
   ngOnInit() {
-    // TODO Fix this 
-    this.subscription = this.recipeService.myRecipes$
-      .subscribe((recipes: Recipe[]) => {
-        this.recipes = recipes;
-    });
   }
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
   }
 
 }
