@@ -35,14 +35,14 @@ export class RecipeEditComponent implements OnInit, OnDestroy {
           this.recipeService.getRecipe(this.id).take(1).subscribe(RecipeData => this.recipe = RecipeData);
           this.initForm();
         });
-    // } else {
-    //   this.subscription = Observable.combineLatest(this.recipeService.myRecipes$, this.route.params )
-    //   .subscribe((params: Params) => {
-    //     this.id = params[1]['id'];
-    //     this.editMode = !!this.id;
-    //     this.recipe = this.recipeService.getRecipe(this.id);
-    //     this.initForm();
-    //   });
+    } else {
+      this.subscription = Observable.combineLatest(this.recipeService.myRecipes$, this.route.params )
+      .subscribe((params: Params) => {
+        this.id = params[1]['id'];
+        this.editMode = !!this.id;
+        this.recipeService.getRecipe(this.id).take(1).subscribe(RecipeData => this.recipe = RecipeData);
+        this.initForm();
+      });
     }
     this.initForm();
   }
