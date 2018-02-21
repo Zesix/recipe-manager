@@ -13,6 +13,7 @@ import 'rxjs/add/observable/combineLatest';
 export class RecipeDetailComponent implements OnInit {
   recipe: Recipe;
   id: string;
+  errorMessage = '';
 
   constructor(private recipeService: RecipeService,
     private route: ActivatedRoute,
