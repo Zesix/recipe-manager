@@ -26,12 +26,6 @@ export class RecipeDetailComponent implements OnInit {
           this.id = params['id'];
           this.recipeService.getRecipe(this.id).take(1).subscribe(recipe => this.recipe = recipe);
         });
-    } else {
-      Observable.combineLatest(this.recipeService.myRecipes$, this.route.params )
-      .subscribe((params: Params) => {
-        this.id = params[1]['id'];
-        this.recipeService.getRecipe(this.id).take(1).subscribe(recipe => this.recipe = recipe);
-      });
     }
   }
 
